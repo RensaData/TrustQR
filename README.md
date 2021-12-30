@@ -2,6 +2,11 @@
  
 認証済みリンク TrustLink と、認証済みリンクのQRコード TrustQR
 
+## demo
+
+- [TrustQR Reader](https://rensadata.github.io/TrustQR/)
+- [TrustQR sample](https://rensadata.github.io/TrustQR/link.html)
+
 ## how to use
 
 make keypair (key.cbor, pubkey.cobr)
