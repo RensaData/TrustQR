@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>qrmaker</title>
+<meta property="og:image" content="https://code4fukui.github.io/qrmaker/qrmaker.png">
+<script type="module">
+import { QRCode } from "https://js.sabae.cc/QRCode.js";
+import { readAsArrayBufferAsync } from "https://code4sabae.github.io/js/readAsArrayBufferAsync.js";
+
+onload = () => {
+	const hash = document.location.hash;
+	if (hash.length > 1) {
+		txt.value = hash.substring(1);
+	}
+
+	const qrcode = new QRCode(txt.value);
+	qr.appendChild(qrcode);
+
+	txt.onkeyup = () => {
+		qrcode.value = txt.value;
+	};
+	onhashchange = () => {
+		txt.value = document.location.hash.substring(1);
+		qrcode.value = txt.value;
+	};
+	document.body.ondragover = (e) => {
+		e.preventDefault();
+	};
+	document.body.ondrop = async (e) => {
+    e.preventDefault();
+		for (const item of e.dataTransfer.items) {
+			if (item.kind !== "file") {
+					continue;
+			}
+			const file = item.getAsFile();
+			const bin = new Uint8Array(await readAsArrayBufferAsync(file));
+			try {
+				qrcode.value = bin;
+			} catch (e) {
+				alert(e.toString());
+			}
+			txt.value = "";
+			break;
+		}
+	};
+};
+</script>
+<style>
+body {
+	margin: 0px;
+	text-align: center;
+}
+#main {
+	width: 100%;
+	text-align: center;
+}
+#qr {
+	margin: 2em;
+}
+#txt {
+	margin-top: 10px;
+	padding: 2px;
+	font-size: 100%;
+	width: 280px;
+}
+.credit {
+	font-size: 90%;
+}
+a {
+	color: gray !important;
+}
+</style>
+</head>
+<body spellcheck="false">
+
+<h1>qrmaker</h1>
+<div id='main'>
+<input type="text" id="txt" placeholder="QRコード化したい文字列"><br>
+<div id="qr"></div>
+</div>
+
+<div id='credit'>
+QRコード化したいデータを<br>
+URLのハッシュ、入力ボックス、ファイルをドロップで設定できます<br>
+（データを通信しないことを開発ツールなどでご確認ください）<br>
+<br>
+APP: CC BY <a href=https://fukuno.jig.jp/3443>(c)taisukef 一日一創</a><br>
+LIB: <a href=https://github.com/taisukef/qrcode-generator/tree/es/es>qrcode-generator (ES)</a><br>
+<a href=https://www.qrcode.com/>QRコード</a>(R)は、<a href=https://www.denso-wave.com/>株式会社デンソーウェーブ</a>の登録商標です。<br>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>TrustQR</title>
+<script type="module" src="https://js.sabae.cc/QRCode.js"></script>
+<style>
+body {
+	margin: 0px;
+	text-align: center;
+}
+#main {
+	width: 100%;
+	text-align: center;
+}
+#qr {
+	margin: 2em;
+}
+#txt {
+	margin-top: 10px;
+	padding: 2px;
+	font-size: 100%;
+	width: 280px;
+}
+.credit {
+	font-size: 90%;
+}
+a {
+	color: gray !important;
+}
+</style>
+</head>
+<body>
+
+<h1>TrustLink</h1>
+<qr-code src="./link.rensa"></qr-code>
+
+<div id='credit'>
+Rensaフォーマットを使った、認証済みリンク(TrustLink)のQRコード、TrustQR<br>
+TrustQRReaderを使うと検証したリンクのみ繊維するので安全です。<br>
+作成方法は<a href=https://github.com/RensaData/TrustQR/>TrustQR README.md</a>参照<br>
+<br>
+LIB: <a href=https://github.com/taisukef/qrcode-generator/tree/es/es>qrcode-generator (ES)</a><br>
+<a href=https://www.qrcode.com/>QRコード</a>(R)は、<a href=https://www.denso-wave.com/>株式会社デンソーウェーブ</a>の登録商標です。<br>
+</div>
+
+</body>
+</html>
