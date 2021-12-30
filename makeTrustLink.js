@@ -1,4 +1,4 @@
-import { Rensa } from "https://RensaData.github.io/Rensa-es/Rensa.js";
+import { TrustLink } from "./TrustLink.js";
 import { RensaIMI } from "https://RensaData.github.io/imi/RensaIMI.js";
 import Ed25519 from "https://taisukef.github.io/forge-es/lib/ed25519.js";
 import { CBOR } from "https://js.sabae.cc/CBOR.js";
@@ -13,7 +13,7 @@ if (!url) {
 const keypair = CBOR.decode(await Deno.readFile(keyfn));
 //console.log(keypair);
 
-const trx = new Rensa((signData) => {
+const tlink = new TrustLink((signData) => {
   const sig = Ed25519.sign({
     privateKey: keypair[RensaIMI.privateKey.url],
     message: signData,
@@ -21,7 +21,7 @@ const trx = new Rensa((signData) => {
   });
   return [keypair[RensaIMI.publicKey.url], sig];
 });
-trx.addAndSign(Rensa.KIND_ROOT, { "https://schema.org/url": url });
-console.log("verify:", trx.verify());
-const bin = trx.toCBOR();
+tlink.addAndSignLink(url);
+console.log("verify:", tlink.verify());
+const bin = tlink.toCBOR();
 await Deno.writeFile("link.rensa", bin);

@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>TrustQR</title>
-<script type="module" src="https://js.sabae.cc/QRCode.js"></script>
+<title>TrustQR demo</title>
+<script type="module" src="https://code4fukui.github.io/qr-code/qr-code.js"></script>
 <style>
 body {
 	margin: 0px;
@@ -29,8 +29,11 @@ a {
 </head>
 <body>
 
-<h1>TrustLink</h1>
+<h1>TrustQR demo</h1>
+<h2>TrustLink</h2>
 <qr-code src="./link.rensa"></qr-code>
+<h2>TrustLink with an another pubkey</h2>
+<qr-code src="./link-another-pubkey.rensa"></qr-code>
 
 <div id='credit'>
 Rensaフォーマットを使った、認証済みリンク(TrustLink)のQRコード、TrustQR<br>

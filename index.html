@@ -1,88 +1,123 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>qrmaker</title>
-<meta property="og:image" content="https://code4fukui.github.io/qrmaker/qrmaker.png">
-<script type="module">
-import { QRCode } from "https://js.sabae.cc/QRCode.js";
-import { readAsArrayBufferAsync } from "https://code4sabae.github.io/js/readAsArrayBufferAsync.js";
-
-onload = () => {
-	const hash = document.location.hash;
-	if (hash.length > 1) {
-		txt.value = hash.substring(1);
-	}
-
-	const qrcode = new QRCode(txt.value);
-	qr.appendChild(qrcode);
-
-	txt.onkeyup = () => {
-		qrcode.value = txt.value;
-	};
-	onhashchange = () => {
-		txt.value = document.location.hash.substring(1);
-		qrcode.value = txt.value;
-	};
-	document.body.ondragover = (e) => {
-		e.preventDefault();
-	};
-	document.body.ondrop = async (e) => {
-    e.preventDefault();
-		for (const item of e.dataTransfer.items) {
-			if (item.kind !== "file") {
-					continue;
-			}
-			const file = item.getAsFile();
-			const bin = new Uint8Array(await readAsArrayBufferAsync(file));
-			try {
-				qrcode.value = bin;
-			} catch (e) {
-				alert(e.toString());
-			}
-			txt.value = "";
-			break;
-		}
-	};
-};
-</script>
+<title>TrustQR Reader</title>
 <style>
 body {
-	margin: 0px;
-	text-align: center;
+  font-family: sans-serif;
+  color: #333;
+  max-width: 640px;
+  margin: 0 auto;
+  position: relative;
 }
-#main {
-	width: 100%;
-	text-align: center;
+#h1 {
+  margin: 10px 0;
+  font-size: 40px;
 }
-#qr {
-	margin: 2em;
+#canvas {
+  width: 100%;
 }
-#txt {
-	margin-top: 10px;
-	padding: 2px;
-	font-size: 100%;
-	width: 280px;
+#outputContainer {
+  margin-top: 20px;
+  background: #eee;
+  padding: 10px;
+  padding-bottom: 0;
+  word-break: break-all;
 }
-.credit {
-	font-size: 90%;
+#outputContainer div {
+  padding-bottom: 10px;
+  word-wrap: break-word;
 }
-a {
-	color: gray !important;
+#noQRFound {
+  text-align: center;
 }
 </style>
 </head>
-<body spellcheck="false">
+<body>
 
-<h1>qrmaker</h1>
-<div id='main'>
-<input type="text" id="txt" placeholder="QRコード化したい文字列"><br>
-<div id="qr"></div>
+<h1>TrustQR Reader</h1>
+
+<p>TrustPure JavaScript QR code decoding library.</p>
+<div id="loadingMessage">🎥 Unable to access video stream (please make sure you have a webcam enabled)</div>
+<canvas id="canvas"></canvas>
+<div id="outputContainer">
+  <div id="outputMessage">No QR code detected.</div>
+  <div><b>Data:</b> <span id="outputData"></span></div>
 </div>
 
-<div id='credit'>
-QRコード化したいデータを<br>
-URLのハッシュ、入力ボックス、ファイルをドロップで設定できます<br>
-（データを通信しないことを開発ツールなどでご確認ください）<br>
+<script type="module">
+import { jsQR } from "https://code4fukui.github.io/jsQR-es/jsQR.js";
+import { hex } from "https://code4sabae.github.io/js/hex.js";
+import { TrustLink } from "./TrustLink.js";
+import { CBOR } from "https://js.sabae.cc/CBOR.js";
+import { fetchBin } from "https://js.sabae.cc/fetchBin.js";
+
+onload = async () => {
+  const video = document.createElement("video");
+  const g = canvas.getContext("2d");
+
+  const drawLine = (begin, end, color) => {
+    g.beginPath();
+    g.moveTo(begin.x, begin.y);
+    g.lineTo(end.x, end.y);
+    g.lineWidth = 4;
+    g.strokeStyle = color;
+    g.stroke();
+  }
+
+  const pubkey = CBOR.decode(await fetchBin("./pubkey.cbor"));
+
+  // Use facingMode: environment to attemt to get the front camera on phones
+  const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+  video.srcObject = stream;
+  video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+  video.play();
+
+  const tick = () => {
+    loadingMessage.innerText = "⌛ Loading video..."
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      loadingMessage.hidden = true;
+      canvas.hidden = false;
+      outputContainer.hidden = false;
+
+      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth;
+      g.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = g.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+      if (code) {
+        const color = "#FF3B58";
+        drawLine(code.location.topLeftCorner, code.location.topRightCorner, color);
+        drawLine(code.location.topRightCorner, code.location.bottomRightCorner, color);
+        drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, color);
+        drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, color);
+        outputMessage.hidden = true;
+        outputData.parentElement.hidden = false;
+
+				const data = TrustLink.decode(new Uint8Array(code.binaryData), pubkey);
+				if (data) {
+					outputData.innerText = JSON.stringify(data);
+					const url = data["https://schema.org/url"];
+					if (url) {
+						setTimeout(() => document.location = url, 500);
+					}
+				} else {
+					outputData.innerText = "no TrustLink";
+				}
+      } else {
+        //outputMessage.hidden = false;
+        //outputData.parentElement.hidden = true;
+      }
+    }
+    requestAnimationFrame(tick);
+  };
+  tick();
+};
+</script>
+
 <br>
-APP: CC BY <a href=https://fukuno.jig.jp/3443>(c)taisukef 一日一創</a><br>
+Blog: <a href=https://fukuno.jig.jp/3444>一日一創</a><br>
+App: <a href=https://github.com/RensaData/TrustQR/>src on GitHub</a><br>
 LIB: <a href=https://github.com/taisukef/qrcode-generator/tree/es/es>qrcode-generator (ES)</a><br>
 <a href=https://www.qrcode.com/>QRコード</a>(R)は、<a href=https://www.denso-wave.com/>株式会社デンソーウェーブ</a>の登録商標です。<br>
 </div>
