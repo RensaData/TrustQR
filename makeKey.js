@@ -10,8 +10,10 @@ secretKey[RensaIMI.privateKey.url] = keys.privateKey;
 secretKey[RensaIMI.publicKey.url] = keys.publicKey;
 const secretbin = CBOR.encode(secretKey);
 await Deno.writeFile("key.cbor", secretbin);
+await Deno.chmod("key.cbor", 0o600);
 console.log("make key.cbor", secretbin.length, "byte");
 
+// future: print to stdout and develop command to readback 
 const publicKey = {};
 publicKey[RensaIMI.publicKey.url] = keys.publicKey;
 const publicbin = CBOR.encode(publicKey);
