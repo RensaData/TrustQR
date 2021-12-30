@@ -25,19 +25,32 @@ body {
 a {
 	color: gray !important;
 }
+.row2 {
+	flex-flow: column;
+}
+.row2 div {
+	display: inline-block;
+	margin: 1em 3em;
+}
 </style>
 </head>
 <body>
 
 <h1>TrustQR demo</h1>
-<h2>TrustLink</h2>
-<qr-code src="./link.rensa"></qr-code>
-<h2>TrustLink with an another pubkey</h2>
-<qr-code src="./link-another-pubkey.rensa"></qr-code>
+<div class="row2">
+	<div>
+		<h2>TrustLink (active pubkey)</h2>
+		<qr-code src="./link.rensa"></qr-code>
+	</div>
+	<div>
+		<h2>TrustLink (old pubkey)</h2>
+		<qr-code src="./link-another-pubkey.rensa"></qr-code>
+	</div>
+</div>
 
 <div id='credit'>
 Rensaフォーマットを使った、認証済みリンク(TrustLink)のQRコード、TrustQR<br>
-TrustQRReaderを使うと検証したリンクのみ繊維するので安全です。<br>
+<a href=./>TrustQR Reader</a>を使うと検証したリンクのみ繊維するので安全です。<br>
 作成方法は<a href=https://github.com/RensaData/TrustQR/>TrustQR README.md</a>参照<br>
 <br>
 LIB: <a href=https://github.com/taisukef/qrcode-generator/tree/es/es>qrcode-generator (ES)</a><br>
